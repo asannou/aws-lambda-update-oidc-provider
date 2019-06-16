@@ -7,7 +7,7 @@ resource "aws_lambda_function" "oidc" {
   handler = "index.handler"
   runtime = "nodejs8.10"
   timeout = "60"
-  source_code_hash = "${base64sha256(file("${data.archive_file.lambda.output_path}"))}"
+  source_code_hash = "${data.archive_file.lambda.output_base64sha256}"
   environment {
     variables = {
       EXCLUDED_PROVIDERS = "${join(" ", var.excluded_providers)}"
@@ -15,10 +15,20 @@ resource "aws_lambda_function" "oidc" {
   }
 }
 
+resource "null_resource" "node-modules" {
+  triggers = {
+    package = "${filebase64sha256("${path.module}/update-aws-oidc-provider-thumbprints/package.json")}"
+  }
+  provisioner "local-exec" {
+    command = "cd ${path.module}/update-aws-oidc-provider-thumbprints && npm install"
+  }
+}
+
 data "archive_file" "lambda" {
   type = "zip"
   source_dir = "${path.module}/update-aws-oidc-provider-thumbprints"
   output_path = "${path.module}/update-aws-oidc-provider-thumbprints.zip"
+  depends_on = ["null_resource.node-modules"]
 }
 
 resource "aws_iam_role" "lambda" {
