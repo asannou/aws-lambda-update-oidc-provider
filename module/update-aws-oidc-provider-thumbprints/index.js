@@ -58,7 +58,9 @@ async function getThumbprintList(arn) {
     jwksUri.hostname
   ));
   const thumbprints = (await Promise.all(connects)).filter(Boolean);
-  return provider.ThumbprintList.concat(thumbprints).unique();
+  const maxLength = 5;
+  return thumbprints.concat(provider.ThumbprintList)
+    .unique().splice(0, maxLength);
 }
 
 async function getJwksUri(providerUrl) {
