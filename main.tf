@@ -5,7 +5,7 @@ resource "aws_lambda_function" "oidc" {
   function_name = "update-aws-oidc-provider-thumbprints"
   role = "${aws_iam_role.lambda.arn}"
   handler = "index.handler"
-  runtime = "nodejs8.10"
+  runtime = "nodejs12.x"
   timeout = "60"
   source_code_hash = "${data.archive_file.lambda.output_base64sha256}"
   environment {
