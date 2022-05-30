@@ -13,7 +13,7 @@ jobs:
       - name: commit
         run: |
           git add README.md
-          if git diff --cached --quiet --exit-code
+          if ! git diff --cached --quiet --exit-code
           then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
