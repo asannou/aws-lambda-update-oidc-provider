@@ -1,6 +1,6 @@
 # terraform-aws-lambda-update-oidc-provider
 
-# terraform graph
+## terraform graph
 
 ```mermaid
 %%tfmermaid
