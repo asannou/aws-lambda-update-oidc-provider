@@ -27,44 +27,55 @@ n7["aws_iam_policy.lambda-log"]:::r
 n8["aws_iam_role.lambda"]:::r
 n9["aws_iam_role_policy_attachment.<br/>lambda"]:::r
 na["aws_iam_role_policy_attachment.<br/>lambda-log"]:::r
-nb{{"data.<br/>aws_iam_policy_document.<br/>lambda"}}:::r
-nc{{"data.<br/>aws_iam_policy_document.<br/>lambda-log"}}:::r
-nd{{"data.<br/>aws_iam_policy_document.<br/>lambda-role"}}:::r
+nb{{"data.<br/>aws_iam_policy_document.<br/>key"}}:::r
+nc{{"data.<br/>aws_iam_policy_document.<br/>lambda"}}:::r
+nd{{"data.<br/>aws_iam_policy_document.<br/>lambda-log"}}:::r
+ne{{"data.<br/>aws_iam_policy_document.<br/>lambda-role"}}:::r
 end
 class n5 cs
-subgraph "ne"["Lambda"]
-nf["aws_lambda_function.oidc"]:::r
-ng["aws_lambda_permission.<br/>cloudwatch"]:::r
+subgraph "nf"["KMS (Key Management)"]
+ng["aws_kms_key.lambda"]:::r
 end
-class ne cs
-nh{{"data.archive_file.lambda"}}:::r
-subgraph "ni"["STS (Security Token)"]
-nj{{"data.<br/>aws_caller_identity.<br/>identity"}}:::r
+class nf cs
+subgraph "nh"["Lambda"]
+ni["aws_lambda_function.oidc"]:::r
+nj["aws_lambda_permission.<br/>cloudwatch"]:::r
 end
-class ni cs
-nk["null_resource.node-modules"]:::r
-subgraph "nl"["Input Variables"]
-nm(["var.excluded_providers"]):::v
-nn(["var.<br/>lambda_schedule_expression"]):::v
+class nh cs
+nk{{"data.archive_file.lambda"}}:::r
+subgraph "nl"["STS (Security Token)"]
+nm{{"data.<br/>aws_caller_identity.<br/>identity"}}:::r
 end
-class nl vs
-nn---->n1
+class nl cs
+subgraph "nn"["Meta Data Sources"]
+no{{"data.aws_region.region"}}:::r
+end
+class nn cs
+subgraph "np"["Input Variables"]
+nq(["var.excluded_providers"]):::v
+nr(["var.<br/>lambda_schedule_expression"]):::v
+end
+class np vs
+nr---->n1
 n1-->n2
-nf-->n2
-nf-->n4
-nb-->n6
-nc-->n7
-nd-->n8
+ni-->n2
+ng-->n4
+nc-->n6
+nd-->n7
+ne-->n8
 n6-->n9
 n8-->n9
 n7-->na
 n8-->na
-n8-->nf
-nh-->nf
-nm---->nf
-n1-->ng
-nf-->ng
-nk-->nh
-nj-->nb
+nb-->ng
+n8-->ni
+nk-->ni
+nq---->ni
+n1-->nj
+ni-->nj
+ni-->nb
+nm-->nb
+no-->nb
+nm-->nc
 ```
 
