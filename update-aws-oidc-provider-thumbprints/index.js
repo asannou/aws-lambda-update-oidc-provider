@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 'use strict';
 
-const util = require('util');
-const request = util.promisify(require('request'));
-const url = require('url');
-const resolve4 = util.promisify(require('dns').resolve4);
-const tls = require('tls');
-
+const url = require('node:url');
+const { Resolver } = require('node:dns').promises;
+const https = require('node:https');
+const tls = require('node:tls');
 const AWS = require('aws-sdk');
+
+const resolver = new Resolver();
 const sts = new AWS.STS();
 const iam = new AWS.IAM();
 
@@ -20,7 +20,7 @@ async function list() {
   const excluded = await listArns(process.env.EXCLUDED_PROVIDERS);
   return providers.OpenIDConnectProviderList
     .filter((provider) => !excluded.includes(provider.Arn));
-};
+}
 
 async function listArns(providers = '') {
   const identity = await sts.getCallerIdentity().promise();
@@ -51,7 +51,7 @@ async function updateThumbprints(arn) {
 async function getThumbprintList(arn) {
   const provider = await get({ OpenIDConnectProviderArn: arn });
   const jwksUri = await getJwksUri(provider.Url);
-  const addresses = await resolve4(jwksUri.hostname);
+  const addresses = await resolver.resolve4(jwksUri.hostname);
   const connects = addresses.map((address) => connect(
     jwksUri.port || 443,
     address,
@@ -65,9 +65,20 @@ async function getThumbprintList(arn) {
 
 async function getJwksUri(providerUrl) {
   const configUrl = `https://${providerUrl}/.well-known/openid-configuration`;
-  const response = await request(configUrl);
-  const config = JSON.parse(response.body);
-  return url.parse(config.jwks_uri);
+  const { jwks_uri } = await httpsGet(configUrl);
+  return url.parse(jwks_uri);
+}
+
+function httpsGet(url) {
+  return new Promise((resolve, reject) => {
+    const request = https.request(url, { method: 'GET' }, (response) => {
+      let data = '';
+      response.on('data', (chunk) => data += chunk);
+      response.on('end', () => resolve(JSON.parse(data)));
+    });
+    request.on('error', reject);
+    request.end();
+  });
 }
 
 function connect(port, address, servername) {
