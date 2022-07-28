@@ -87,9 +87,9 @@ function connect(port, address, servername) {
     const options = { servername: servername };
     const socket = tls.connect(port, address, options, () => {
       socket.end();
-      const cert = socket.getPeerCertificate();
+      const cert = socket.getPeerX509Certificate();
       if (socket.authorized) {
-        const fingerprint = cert.fingerprint.replace(/:/g, '').toLowerCase();
+        const fingerprint = getTopIntermediateFingerprint(cert);
         log(fingerprint);
         resolve(fingerprint);
       } else {
@@ -102,6 +102,14 @@ function connect(port, address, servername) {
       socket.destroy();
     });
   });
+}
+
+function getTopIntermediateFingerprint(cert) {
+  if (cert.issuerCertificate) {
+    return getTopIntermediateFingerprint(cert.issuerCertificate);
+  } else {
+    return cert.fingerprint.replace(/:/g, '').toLowerCase();
+  }
 }
 
 exports.handler = async (event, context, callback) => {
